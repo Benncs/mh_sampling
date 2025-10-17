@@ -1,0 +1,5 @@
+option('use_cuda', type: 'boolean', value: false)
+option('use_system_kokkos', type: 'boolean', value: false)
+option('compile_tools',type: 'boolean',value:false)
+option('ci_execution',type: 'boolean',value:false)
+option('build_test',type: 'boolean',value:false)
