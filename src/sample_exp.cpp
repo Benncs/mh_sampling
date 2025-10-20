@@ -1,6 +1,6 @@
 #include <Kokkos_Core.hpp>
 #include <Kokkos_Random.hpp>
-#include <metropolis.hpp>
+#include <Kokkos_sampling/metropolis.hpp>
 #include <utils.hpp>
 
 using Ftype = float;
@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     Kokkos::View<Ftype *, Kokkos::DefaultExecutionSpace> samples(
         "samples", args.n_samples);
 
-    rc = metropolis(target, samples, args.a, args.b);
+    rc = Sampling::metropolis(target, samples, args.a, args.b);
     if (rc == 0) {
       //      save_csv(samples, "samples_exp.csv");
 

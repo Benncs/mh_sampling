@@ -8,6 +8,9 @@
 #include <random>
 #endif
 
+namespace Sampling {
+
+namespace {
 template <typename float_type, typename generator_type>
   requires(std::same_as<float_type, float>)
 KOKKOS_INLINE_FUNCTION float_type gen_samples(float_type a, float_type b,
@@ -21,16 +24,19 @@ KOKKOS_INLINE_FUNCTION float_type gen_samples(float_type a, float_type b,
                                               generator_type &gen) {
   return gen.drand(a, b);
 }
+} // namespace
 
 template <typename lamda_type, typename view_type, typename float_type>
   requires(std::same_as<typename view_type::value_type, float_type>)
 int metropolis(const lamda_type &target_distribution, view_type samples,
-               float_type a, float_type b) {
+               float_type a, float_type b, uint64_t seed = 0) {
+  if (seed == 0) {
 #ifndef NDEBUG
-  const uint64_t seed = 2025;
+    seed = 2025;
 #else
-  const uint64_t seed = std::random_device{}();
+    seed = std::random_device{}();
 #endif
+  }
 
   if (b <= a) {
     std::cerr << "Sample bounds must be in [a,b] with a<b" << std::endl;
@@ -61,5 +67,5 @@ int metropolis(const lamda_type &target_distribution, view_type samples,
       });
   return 0;
 }
-
+} // namespace Sampling
 #endif
