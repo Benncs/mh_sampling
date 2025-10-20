@@ -13,11 +13,10 @@ def show(name):
     b = 1
     # x = np.linspace(a, b, 100)
     # plt.plot(x, ll * np.exp(-ll * (x-a)))
-
     plt.legend()
 
 
-show("samples_exp.csv")
-show("samples_lognormal.csv")
-
+# show("samples_exp.csv")
+# show("samples_lognormal.csv")
+show("samples_normal.csv")
 plt.show()

@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
   {
     auto args = Args<Ftype>::parse(argc, argv);
 
-    Ftype mu = 0.0;    // Mean of the log distribution
+    Ftype mu = 2;      // Mean of the log distribution
     Ftype sigma = 1.0; // Standard deviation of the log distribu
     auto target = KOKKOS_LAMBDA(const Ftype x) {
 

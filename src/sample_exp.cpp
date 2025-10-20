@@ -7,7 +7,6 @@ using Ftype = float;
 int main(int argc, char **argv) {
 
   Kokkos::initialize(argc, argv);
-
   int rc = 0;
   {
     auto args = Args<Ftype>::parse(argc, argv);
@@ -21,7 +20,6 @@ int main(int argc, char **argv) {
     rc = Sampling::metropolis(target, samples, args.a, args.b);
     if (rc == 0) {
       //      save_csv(samples, "samples_exp.csv");
-
       Ftype mean = 0;
       Kokkos::parallel_reduce(
           "mean_exp", Kokkos::RangePolicy<>(0, args.n_samples),

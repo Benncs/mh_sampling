@@ -6,11 +6,11 @@
 #include <fstream>
 #include <iostream>
 #include <string_view>
+
 template <typename float_type> struct Args {
   const std::size_t n_samples;
   const float_type a;
   const float_type b;
-
   static Args parse(int argc, char **argv);
 };
 
