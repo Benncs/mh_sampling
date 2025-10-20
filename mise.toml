@@ -2,28 +2,28 @@
 
 
 [env]
-OMP_NUM_THREADS=6
-OMP_PROC_BIND='spread'
-OMP_PLACES='threads'
+OMP_NUM_THREADS = 6
+OMP_PROC_BIND = 'spread'
+OMP_PLACES = 'threads'
 
 [tasks.init_gpu]
-run='CXX=$(pwd)/wrap_cxx meson setup builddir -Duse_cuda=true -Duse_system_kokkos=true --buildtype=release'
+run = 'CXX=$(pwd)/wrap_cxx meson setup builddir -Duse_cuda=true -Duse_system_kokkos=true --buildtype=release -Dbuild_exe=true'
 sources = ["meson.build"]
 
 [tasks.init]
-run='meson setup builddir --buildtype=release'
+run = 'meson setup builddir --buildtype=release -Dbuild_exe=true'
 sources = ["meson.build"]
 
 
 [tasks.build]
 depends = ['init']
 sources = ["src/**/*.cpp", "public/**/*.hpp"]
-outputs = ["builddir/kokkos-sampling_exp","builddir/kokkos-sampling_lognormal"]
+outputs = ["builddir/kokkos-sampling_exp", "builddir/kokkos-sampling_lognormal"]
 run = 'ninja -C builddir'
 
 [tasks.run]
-depends=['build']
+depends = ['build']
 run = './builddir/kokkos-sampling_exp $@ && python3 check.py'
 
 [tasks.clean]
-run="$(rm  *.csv || true )&&  $(unlink  'compile_commands.json' || true) && rm -rf builddir"
+run = "$(rm  *.csv || true )&&  $(unlink  'compile_commands.json' || true) && rm -rf builddir"

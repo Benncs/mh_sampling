@@ -7,41 +7,7 @@ project(
 )
 
 use_cuda = get_option('use_cuda')
-
-arch_specific_args = []
-
-compiler = meson.get_compiler('cpp')
-
-if compiler.has_argument('-fno-math-errno')
-  arch_specific_args = [arch_specific_args, '-fno-math-errno']
-endif
-
-flto_flag = []
-
-if compiler.has_argument('-flto')
-  flto_flag = [flto_flag, '-flto']
-endif
-
-if compiler.has_argument('-dlto')
-  flto_flag = [flto_flag, '-dlto']
-endif
-
-if compiler.has_argument('-march=native')
-  arch_specific_args = [arch_specific_args, '-march=native']
-endif
-
-if compiler.has_argument('-mtune=native')
-  arch_specific_args = [arch_specific_args, '-mtune=native']
-endif
-
-if compiler.has_argument('-Wno-interference-size')
-  # Disable cache line detection size
-  arch_specific_args = [arch_specific_args, '-Wno-interference-size']
-endif
-
-compiler.has_argument('-fopenmp')
-
-## Define main shared variables
+build_executable = get_option('build_exe')
 outdir = meson.current_build_dir()
 root = meson.project_source_root()
 project_name = meson.project_name()
@@ -49,6 +15,42 @@ build_type = get_option('buildtype')
 cpp = meson.get_compiler('cpp')
 global_install_dir = get_option('prefix') + '/' + get_option('libdir')
 
+
+
+name = f'@project_name@_app'
+includes = include_directories(f'public/@project_name@')
+kokkos_sampling = declare_dependency(
+  include_directories: includes,
+)
+
+if build_executable
+
+
+arch_specific_args = []
+compiler = meson.get_compiler('cpp')
+if compiler.has_argument('-fno-math-errno')
+  arch_specific_args = [arch_specific_args, '-fno-math-errno']
+endif
+flto_flag = []
+if compiler.has_argument('-flto')
+  flto_flag = [flto_flag, '-flto']
+endif
+if compiler.has_argument('-dlto')
+  flto_flag = [flto_flag, '-dlto']
+endif
+if compiler.has_argument('-march=native')
+  arch_specific_args = [arch_specific_args, '-march=native']
+endif
+if compiler.has_argument('-mtune=native')
+  arch_specific_args = [arch_specific_args, '-mtune=native']
+endif
+if compiler.has_argument('-Wno-interference-size')
+  # Disable cache line detection size
+  arch_specific_args = [arch_specific_args, '-Wno-interference-size']
+endif
+compiler.has_argument('-fopenmp')
+
+## Define main shared variables
 use_kokkos_tools = true
 
 cpp_args = [arch_specific_args]
@@ -103,7 +105,6 @@ if use_system_kokkos
     compile_args: kokkos_compile_arg,
   )
 else
-
   kokkos_option = cmake.subproject_options()
   kokkos_option.add_cmake_defines({'CMAKE_CXX_STANDARD': '20'})
   kokkos_option.add_cmake_defines({'CMAKE_BUILD_TYPE': CMAKE_TYPE})
@@ -131,37 +132,35 @@ endif
 
 add_project_arguments(cpp_args, language: 'cpp')
 
-name = f'@project_name@_app'
+  
+  lib_app = library(
+    f'@project_name@',
+    'src/utils.cpp',
+    include_directories: includes,
+    dependencies: [kokkos_sampling,kokkos],
+    cpp_args: [],
+  )
 
-includes = include_directories(f'public/@project_name@')
+  dep_app= declare_dependency(
+    include_directories: includes,
+    link_with: lib_app,
+    dependencies: [kokkos_sampling,kokkos],
+    compile_args: [],
+  )
 
-lib_app = library(
-  f'@project_name@',
-  'src/utils.cpp',
-  include_directories: includes,
-  cpp_args: [],
-)
+  executable(
+    f'@project_name@_exp',
+    f'src/sample_exp.cpp',
+    dependencies: [dep_app],
+    link_args: [flto_flag],
+  )
 
-app_dependency = declare_dependency(
+  executable(
+    f'@project_name@_lognormal',
+    f'src/sample_lognormal.cpp',
+    dependencies: [dep_app],
+    link_args: [flto_flag],
+  )
+  run_command('sh', '-c', f'ln -s @outdir@/compile_commands.json .', check: false)
 
-  include_directories: includes,
-  dependencies: kokkos,
-  link_with: lib_app,
-  compile_args: [],
-)
-
-executable(
-  f'@project_name@_exp',
-  f'src/sample_exp.cpp',
-  dependencies: [app_dependency],
-  link_args: [flto_flag],
-)
-
-executable(
-  f'@project_name@_lognormal',
-  f'src/sample_lognormal.cpp',
-  dependencies: [app_dependency],
-  link_args: [flto_flag],
-)
-
-run_command('sh', '-c', f'ln -s @outdir@/compile_commands.json .', check: false)
+endif 
